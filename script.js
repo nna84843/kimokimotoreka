@@ -7,6 +7,7 @@ const defaultUserData = {
   lastRouletteDate: "", 
   inventory: {}, 
   usedCodes: [],
+  usedTradeCodes: [], // 使用済みトレードコードの保存リスト
   favoriteCardId: "c8"
 };
 let userData = { ...defaultUserData };
@@ -208,6 +209,12 @@ function receiveTradeCode() {
   const code = input.value.trim();
   if(!code) return;
   
+  // 使用済みコードのチェック
+  if(!userData.usedTradeCodes) userData.usedTradeCodes = [];
+  if(userData.usedTradeCodes.includes(code)) {
+    return alert("このトレードコードは既に使用されています！");
+  }
+  
   try {
     const rawData = decodeURIComponent(atob(code));
     const parts = rawData.split('|');
@@ -218,6 +225,8 @@ function receiveTradeCode() {
     if(!card) throw new Error("存在しないカード");
     
     userData.inventory[id] = (userData.inventory[id] || 0) + 1;
+    userData.usedTradeCodes.push(code); // 使用済みとして記録
+    
     input.value = "";
     alert(`トレード成功！\n「${card.name} (${card.rarity})」を受け取りました！`);
     saveData();
@@ -244,8 +253,31 @@ function useSerialCode() {
   }
 }
 
+// データ書き出し
 function exportData() {
   prompt("以下の文字列がセーブデータです。コピーして保存してください。", JSON.stringify(userData));
+}
+
+// データ読み込み（復元）
+function importData() {
+  const input = document.getElementById('import-input');
+  if(!input) return;
+  const dataStr = input.value.trim();
+  if(!dataStr) return alert("セーブデータを入力してください。");
+  
+  try {
+    const importedData = JSON.parse(dataStr);
+    if(typeof importedData === 'object' && importedData !== null) {
+      userData = Object.assign({}, defaultUserData, importedData);
+      saveData();
+      alert("セーブデータを復元しました！");
+      location.reload();
+    } else {
+      throw new Error();
+    }
+  } catch(e) {
+    alert("無効なセーブデータコードです。");
+  }
 }
 
 window.onload = loadData;

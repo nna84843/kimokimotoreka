@@ -60,8 +60,6 @@ function playGachaAnimation(results) {
     modal.style.display = 'flex';
 
     let index = 0;
-    const totalNew = results.filter(r => r.isNew).length;
-    let currentNewCount = 0;
 
     async function nextCard() {
       if (index >= results.length) {
@@ -75,9 +73,9 @@ function playGachaAnimation(results) {
       cardTarget.innerHTML = createCardHTML(item.card, 1, false);
 
       if (item.isNew) {
-        currentNewCount++;
         if (newBadge) newBadge.style.display = 'inline-block';
-        if (tapMsg) tapMsg.innerText = `【 NEW (${currentNewCount}/${totalNew}) 】タップで次へ`;
+        // 先バレ防止：総数やカウントを出さずに統一メッセージに修正
+        if (tapMsg) tapMsg.innerText = "【 NEWカード獲得！】タップで次へ";
 
         await waitForTap(modal);
 
@@ -89,7 +87,7 @@ function playGachaAnimation(results) {
         if (newBadge) newBadge.style.display = 'none';
         if (tapMsg) tapMsg.innerText = "";
         index++;
-        setTimeout(nextCard, 100); // めくるスピード（100ms = 0.1秒）
+        setTimeout(nextCard, 100);
       }
     }
 
@@ -118,7 +116,6 @@ function showGachaSummary(results) {
   
   if(!summaryContainer || !resultList) return;
   
-  // 1. 同一カードを集計
   const summaryMap = new Map();
   results.forEach(item => {
     const id = item.card.id;
@@ -132,14 +129,12 @@ function showGachaSummary(results) {
     summaryMap.get(id).count += 1;
   });
 
-  // 2. レアリティ順（UR > SSR > SR > R > N）にソート
   const sortedSummary = Array.from(summaryMap.values()).sort((a, b) => {
     const orderA = RARITY_ORDER[a.card.rarity] || 0;
     const orderB = RARITY_ORDER[b.card.rarity] || 0;
-    return orderB - orderA; // 降順
+    return orderB - orderA;
   });
 
-  // 3. リスト出力
   resultList.innerHTML = "";
   sortedSummary.forEach(data => {
     const newTag = data.isNew ? `<span class="result-new-tag">NEW!</span>` : "";
@@ -162,3 +157,4 @@ function closeGachaResult() {
   const modal = document.getElementById('gacha-result');
   if(modal) modal.style.display = 'none';
 }
+

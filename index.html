@@ -69,8 +69,22 @@
   <button class="btn" onclick="useSerialCode()">特典を受け取る</button>
 
   <h2 style="margin-top:40px;">データ管理</h2>
-  <button class="btn" style="background:#444; color:#fff;" onclick="exportData()">セーブデータ書き出し</button>
-  <button class="btn" style="background:#800; color:#fff;" onclick="if(confirm('本当にデータを初期化しますか？')) { localStorage.removeItem('GachaAppDB'); location.reload(); }">データリセット</button>
+  
+  <!-- データ書き出し -->
+  <div style="background: var(--card-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+    <h3 style="margin-top:0;">セーブデータの書き出し</h3>
+    <button class="btn" style="background:#444; color:#fff;" onclick="exportData()">セーブデータコードを表示</button>
+  </div>
+
+  <!-- データ読み込み -->
+  <div style="background: var(--card-bg); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+    <h3 style="margin-top:0;">セーブデータの読み込み</h3>
+    <input type="text" id="import-input" class="input-box" placeholder="セーブデータコードを貼り付け">
+    <button class="btn" style="background: var(--primary); color:#000;" onclick="importData()">データを復元する</button>
+  </div>
+
+  <!-- データリセット -->
+  <button class="btn" style="background:#800; color:#fff; margin-top:20px;" onclick="if(confirm('本当にデータを初期化しますか？')) { localStorage.removeItem('GachaAppDB'); location.reload(); }">データリセット</button>
 </div>
 
 <!-- ルーレット用 モーダル -->
