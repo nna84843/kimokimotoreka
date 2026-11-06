@@ -1,12 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>オリジナルカードガチャシステム</title>
-<!-- アプデ即時反映（キャッシュ対策）の ?v=2 付き -->
-<link rel="stylesheet" href="style.css?v=2">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -16,14 +14,12 @@
 <div id="view-home" class="view active">
   <div class="home-header">
     <div style="font-weight:bold;">HOME MY CARD</div>
-    <!-- ルーレット起動アイコン -->
     <button id="btn-roulette-icon" class="roulette-icon-btn" onclick="openRouletteModal()">
       <span>🎡 デイリー</span>
       <div id="roulette-notice" class="roulette-badge">!</div>
     </button>
   </div>
 
-  <!-- 看板カード表示エリア -->
   <div class="partner-display">
     <div id="partner-card-container" class="partner-card-wrap"></div>
     <p style="font-size:0.85em; color:#aaa; margin-top:5px;">※「カード」タブからお気に入りを変更できます</p>
@@ -99,7 +95,7 @@
     <p id="gacha-anim-tap-msg" style="color:var(--primary); font-size:0.95em; margin-top:15px; font-weight:bold;"></p>
   </div>
 
-  <!-- ② 最終結果リスト画面（画像なし・テキスト一覧） -->
+  <!-- ② 最終結果リスト画面 -->
   <div id="gacha-summary-container" class="roulette-modal-card modal-card-content" style="display:none; max-width:480px;">
     <h2 style="color:var(--primary); margin-top:0;">ガチャ獲得結果</h2>
     <div id="gacha-result-list" class="result-list"></div>
@@ -116,6 +112,10 @@
   <button class="nav-btn" onclick="switchView('view-sys', this)">設定</button>
 </div>
 
-<script src="script.js?v=6"></script>
+<!-- JSファイルを順番通り3本読み込み -->
+<script src="cards.js"></script>
+<script src="gacha.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
+
