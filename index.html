@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>オリジナルカードガチャシステム</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="header-status">所持チケット: <span id="ui-tickets">0</span> 連分</div>
+
+<!-- ホーム画面 -->
+<div id="view-home" class="view active">
+  <div class="home-header">
+    <div style="font-weight:bold;">HOME MY CARD</div>
+    <button id="btn-roulette-icon" class="roulette-icon-btn" onclick="openRouletteModal()">
+      <span>🎡 デイリー</span>
+      <div id="roulette-notice" class="roulette-badge">!</div>
+    </button>
+  </div>
+
+  <div class="partner-display">
+    <div id="partner-card-container" class="partner-card-wrap"></div>
+    <p style="font-size:0.85em; color:#aaa; margin-top:5px;">※「カード」タブからお気に入りを変更できます</p>
+  </div>
+</div>
+
+<!-- ガチャ画面 -->
+<div id="view-gacha" class="view">
+  <h2>ガチャ筐体</h2>
+  <select id="gacha-select" class="select-box">
+    <option value="normal">通常ガチャ</option>
+  </select>
+  <button class="btn" onclick="drawGacha(1)">1回ガチャ</button>
+  <button class="btn" onclick="drawGacha(10)">10連ガチャ</button>
+  <button class="btn" onclick="drawGacha('max')" style="background: var(--accent); color: white;">引けるだけ引く（最大100連）</button>
+</div>
+
+<!-- インベントリ画面 -->
+<div id="view-inv" class="view">
+  <h2>所持カード一覧</h2>
+  <div id="inventory-grid" class="grid"></div>
+</div>
+
+<!-- トレード画面 -->
+<div id="view-trade" class="view">
+  <h2>カードの交換</h2>
+  <p style="font-size:0.9em; color:#aaa;">あいことばコードで友達と1v1直接交換できます</p>
+  
+  <div style="background: var(--card-bg); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+    <h3>【あげる】コード発行</h3>
+    <select id="trade-give-select" class="select-box"></select>
+    <button class="btn" onclick="issueTradeCode()">トレードコードを作成</button>
+    <input type="text" id="trade-code-output" class="input-box" readonly placeholder="ここにコードが出ます" onclick="this.select()">
+  </div>
+
+  <div style="background: var(--card-bg); padding: 15px; border-radius: 8px;">
+    <h3>【もらう】コード入力</h3>
+    <input type="text" id="trade-code-input" class="input-box" placeholder="もらったコードを貼り付け">
+    <button class="btn" onclick="receiveTradeCode()">カードを受け取る</button>
+  </div>
+</div>
+
+<!-- システム画面 -->
+<div id="view-sys" class="view">
+  <h2>シリアルコード</h2>
+  <input type="text" id="serial-input" class="input-box" placeholder="コードを入力">
+  <button class="btn" onclick="useSerialCode()">特典を受け取る</button>
+
+  <h2 style="margin-top:40px;">データ管理</h2>
+  <button class="btn" style="background:#444; color:#fff;" onclick="exportData()">セーブデータ書き出し</button>
+  <button class="btn" style="background:#800; color:#fff;" onclick="if(confirm('本当にデータを初期化しますか？')) { localStorage.removeItem('GachaAppDB'); location.reload(); }">データリセット</button>
+</div>
+
+<!-- ルーレットモーダル -->
+<div id="roulette-modal" class="modal-overlay" onclick="if(event.target === this) closeRouletteModal();">
+  <div class="roulette-modal-card modal-card-content">
+    <h2 style="margin-top:0;">🎡 デイリールーレット</h2>
+    <p style="font-size:0.9em; color:#ccc;">毎日15時更新！<br>10連〜最大1000連分が当たります！</p>
+    
+    <button id="btn-roulette-spin" class="btn" onclick="spinRoulette()">ルーレットを回す！</button>
+    <p id="roulette-msg" style="color: var(--accent); font-weight: bold; margin-top:10px;"></p>
+    
+    <button class="btn" style="background:#333; color:#ccc; margin-top:15px;" onclick="closeRouletteModal()">閉じる</button>
+  </div>
+</div>
+
+<!-- ガチャ結果モーダル -->
+<div id="gacha-result" class="modal-overlay" onclick="this.style.display='none'">
+  <h2 style="color:var(--primary); margin-top:20px;">ガチャ結果</h2>
+  <div id="gacha-result-content" class="modal-card-content"></div>
+  <p style="margin-top: 20px; font-size: 0.9em; color:#aaa;">(画面タップで閉じる)</p>
+</div>
+
+<!-- 下部ナビゲーション -->
+<div class="nav">
+  <button class="nav-btn active" onclick="switchView('view-home', this)">HOME</button>
+  <button class="nav-btn" onclick="switchView('view-gacha', this)">ガチャ</button>
+  <button class="nav-btn" onclick="switchView('view-inv', this)">カード</button>
+  <button class="nav-btn" onclick="switchView('view-trade', this)">交換</button>
+  <button class="nav-btn" onclick="switchView('view-sys', this)">設定</button>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
