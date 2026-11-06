@@ -140,9 +140,9 @@ function spinRoulette() {
 }
 
 /* =========================================
-   5. ガチャ処理
+   5. ガチャ＆新演出ロジック
 ========================================= */
-function drawGacha(times) {
+async function drawGacha(times) {
   if (times === 'max') {
     times = Math.min(userData.tickets, 100);
   }
@@ -154,7 +154,7 @@ function drawGacha(times) {
   userData.tickets -= times;
   const results = [];
   
-  for(let i=0; i<times; i++) {
+  for(let i = 0; i < times; i++) {
     const r = Math.random() * 100;
     let targetRarity = 'N';
     let sum = 0;
@@ -165,51 +165,111 @@ function drawGacha(times) {
     
     const pool = CARDS.filter(c => c.rarity === targetRarity);
     const getCard = pool[Math.floor(Math.random() * pool.length)];
-    results.push(getCard);
     
+    // ガチャを引いた時点で「未所持(初獲得)」か判定
+    const isNew = (!userData.inventory[getCard.id] || userData.inventory[getCard.id] === 0);
+    
+    results.push({ card: getCard, isNew: isNew });
+    
+    // 所持数（凸数）を加算
     userData.inventory[getCard.id] = (userData.inventory[getCard.id] || 0) + 1;
   }
   
-  showGachaResult(results);
   saveData();
-}
-
-function createCardHTML(card, count = 1, showSetBtn = false) {
-  const limitBreak = count - 1;
-  const lbBadge = limitBreak > 0 ? `<div class="limit-break">+${limitBreak}</div>` : "";
-  const isFavorite = (userData.favoriteCardId === card.id);
   
-  let setBtnHTML = "";
-  if (showSetBtn) {
-    if (isFavorite) {
-      setBtnHTML = `<button class="btn btn-sm" style="background:#555; color:#aaa;" disabled>★ 看板中</button>`;
-    } else {
-      setBtnHTML = `<button class="btn btn-sm" onclick="setFavoriteCard('${card.id}')">★ ホームに設定</button>`;
-    }
-  }
-
-  return `
-    <div class="card ${card.rarity}">
-      ${lbBadge}
-      <div class="rarity-tag">${card.rarity}</div>
-      <div class="card-img-wrap">
-        <img src="${card.image}" class="card-img" alt="${card.name}">
-      </div>
-      <div class="card-info">
-        <div class="card-name">${card.name}</div>
-        ${setBtnHTML}
-      </div>
-    </div>
-  `;
+  // 1枚ずつ高速演出開始
+  await playGachaAnimation(results);
 }
 
-function showGachaResult(results) {
-  const container = document.getElementById('gacha-result-content');
-  container.innerHTML = "";
-  results.forEach(card => {
-    container.innerHTML += createCardHTML(card, 1, false);
+// 1枚ずつ高速表示 ＋ NEWカード停止アニメーション
+function playGachaAnimation(results) {
+  return new Promise((resolve) => {
+    const modal = document.getElementById('gacha-result');
+    const animContainer = document.getElementById('gacha-anim-container');
+    const summaryContainer = document.getElementById('gacha-summary-container');
+    const cardTarget = document.getElementById('gacha-anim-card-target');
+    const newBadge = document.getElementById('gacha-anim-new');
+    const tapMsg = document.getElementById('gacha-anim-tap-msg');
+
+    summaryContainer.style.display = 'none';
+    animContainer.style.display = 'block';
+    modal.style.display = 'flex';
+
+    let index = 0;
+
+    async function nextCard() {
+      if (index >= results.length) {
+        // 全表示終了 ➔ 最終結果リスト画面へ
+        animContainer.style.display = 'none';
+        showGachaSummary(results);
+        resolve();
+        return;
+      }
+
+      const item = results[index];
+      cardTarget.innerHTML = createCardHTML(item.card, 1, false);
+
+      if (item.isNew) {
+        // 未所持カード：一時停止してタップを待つ
+        newBadge.style.display = 'inline-block';
+        tapMsg.innerText = "【 NEWカード獲得！】タップで次へ";
+        
+        await waitForTap(modal);
+        
+        newBadge.style.display = 'none';
+        tapMsg.innerText = "";
+        index++;
+        nextCard();
+      } else {
+        // 所持済みカード：超高速でスキップ (70ミリ秒)
+        newBadge.style.display = 'none';
+        tapMsg.innerText = "";
+        index++;
+        setTimeout(nextCard, 70);
+      }
+    }
+
+    nextCard();
   });
-  document.getElementById('gacha-result').style.display = 'flex';
+}
+
+// タップされるまで待機する処理
+function waitForTap(element) {
+  return new Promise((resolve) => {
+    function handler(e) {
+      e.stopPropagation();
+      element.removeEventListener('click', handler);
+      element.removeEventListener('touchstart', handler);
+      resolve();
+    }
+    element.addEventListener('click', handler, { once: true });
+    element.addEventListener('touchstart', handler, { once: true });
+  });
+}
+
+// 最終結果（テキストリスト表示）
+function showGachaSummary(results) {
+  const summaryContainer = document.getElementById('gacha-summary-container');
+  const resultList = document.getElementById('gacha-result-list');
+  
+  resultList.innerHTML = "";
+  
+  results.forEach(item => {
+    const newTag = item.isNew ? `<span class="result-new-tag">NEW!</span>` : "";
+    resultList.innerHTML += `
+      <div class="result-item">
+        <span class="result-rarity ${item.card.rarity}">${item.card.rarity}</span>
+        <span class="result-name">${item.card.name}</span>
+        ${newTag}
+      </div>
+    `;
+  });
+
+  summaryContainer.style.display = 'block';
+}
+
+function closeGachaResult() {
+  document.getElementById('gacha-result').style.display = 'none';
 }
 
 /* =========================================

@@ -250,3 +250,80 @@ h1, h2, h3 { color: var(--primary); text-align: center; margin-top: 10px; }
   width: 90%;
   box-shadow: 0 0 20px rgba(0,255,204,0.3);
 }
+
+/* =========================================
+   ガチャ演出＆最終結果リスト用スタイル
+========================================= */
+.gacha-anim-card {
+  text-align: center;
+  max-width: 260px;
+  width: 80%;
+  margin: 0 auto;
+}
+
+.new-badge {
+  background: var(--accent);
+  color: #fff;
+  font-weight: bold;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 1.1em;
+  display: inline-block;
+  margin-bottom: 12px;
+  box-shadow: 0 0 12px var(--accent);
+  animation: pulse 1s infinite;
+}
+
+.result-list {
+  text-align: left;
+  max-width: 100%;
+  max-height: 50vh;
+  overflow-y: auto;
+  background: #101018;
+  padding: 10px 15px;
+  border-radius: 8px;
+  border: 1px solid #222;
+  margin-top: 10px;
+}
+
+.result-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #222;
+  font-size: 0.95em;
+}
+.result-item:last-child { border-bottom: none; }
+
+.result-rarity {
+  font-weight: 900;
+  width: 45px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 0.8em;
+}
+.result-rarity.N { background: #444; color: #fff; }
+.result-rarity.R { background: #00a855; color: #fff; }
+.result-rarity.SR { background: #7c4dff; color: #fff; }
+.result-rarity.SSR { background: #ffd700; color: #000; }
+.result-rarity.UR { background: #ff007f; color: #fff; }
+
+.result-name {
+  flex: 1;
+  margin: 0 12px;
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.result-new-tag {
+  color: var(--accent);
+  font-size: 0.8em;
+  font-weight: 900;
+  border: 1px solid var(--accent);
+  padding: 1px 5px;
+  border-radius: 4px;
+}

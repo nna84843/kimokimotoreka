@@ -86,12 +86,23 @@
   </div>
 </div>
 
-<!-- ガチャ結果モーダル -->
-<div id="gacha-result" class="modal-overlay" onclick="this.style.display='none'">
-  <h2 style="color:var(--primary); margin-top:20px;">ガチャ結果</h2>
-  <div id="gacha-result-content" class="modal-card-content"></div>
-  <p style="margin-top: 20px; font-size: 0.9em; color:#aaa;">(画面タップで閉じる)</p>
+<!-- ガチャ演出＆最終結果モーダル -->
+<div id="gacha-result" class="modal-overlay">
+  <!-- ① 超高速演出画面 -->
+  <div id="gacha-anim-container" class="gacha-anim-card" style="display:none;">
+    <div id="gacha-anim-new" class="new-badge" style="display:none;">✨ NEW CARD! ✨</div>
+    <div id="gacha-anim-card-target"></div>
+    <p id="gacha-anim-tap-msg" style="color:var(--primary); font-size:0.95em; margin-top:15px; font-weight:bold;"></p>
+  </div>
+
+  <!-- ② 最終結果リスト画面（画像なし・テキスト一覧） -->
+  <div id="gacha-summary-container" class="roulette-modal-card modal-card-content" style="display:none; max-width:480px;">
+    <h2 style="color:var(--primary); margin-top:0;">ガチャ獲得結果</h2>
+    <div id="gacha-result-list" class="result-list"></div>
+    <button class="btn" style="margin-top:15px;" onclick="closeGachaResult()">確定</button>
+  </div>
 </div>
+
 
 <!-- 下部ナビゲーション -->
 <div class="nav">
