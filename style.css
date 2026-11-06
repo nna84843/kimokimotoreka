@@ -326,3 +326,26 @@ h1, h2, h3 { color: var(--primary); text-align: center; margin-top: 10px; }
   border-radius: 4px;
 }
 
+
+/* 枚数表示の固定スタイル */
+.result-name {
+  flex: 1;
+  min-width: 0;
+  margin: 0 8px;
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.result-count {
+  color: var(--primary);
+  font-weight: bold;
+  white-space: nowrap;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.result-new-tag {
+  flex-shrink: 0;
+}

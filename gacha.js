@@ -74,7 +74,6 @@ function playGachaAnimation(results) {
 
       if (item.isNew) {
         if (newBadge) newBadge.style.display = 'inline-block';
-        // 先バレ防止：総数やカウントを出さずに統一メッセージに修正
         if (tapMsg) tapMsg.innerText = "【 NEWカード獲得！】タップで次へ";
 
         await waitForTap(modal);
@@ -108,7 +107,7 @@ function waitForTap(element) {
   });
 }
 
-// 最終結果画面（集計 ＋ レアリティ高い順ソート）
+// 最終結果画面（枚数表示を独立させて文字切れを修正）
 function showGachaSummary(results) {
   const summaryContainer = document.getElementById('gacha-summary-container');
   const resultList = document.getElementById('gacha-result-list');
@@ -138,12 +137,14 @@ function showGachaSummary(results) {
   resultList.innerHTML = "";
   sortedSummary.forEach(data => {
     const newTag = data.isNew ? `<span class="result-new-tag">NEW!</span>` : "";
-    const countText = data.count > 1 ? `<span style="color:var(--primary); font-weight:bold; margin-left:6px;">×${data.count}</span>` : "";
+    // 枚数表示を独立した要素に変更
+    const countText = data.count > 1 ? `<span class="result-count">×${data.count}</span>` : "";
     
     resultList.innerHTML += `
       <div class="result-item">
         <span class="result-rarity ${data.card.rarity}">${data.card.rarity}</span>
-        <span class="result-name">${data.card.name}${countText}</span>
+        <span class="result-name">${data.card.name}</span>
+        ${countText}
         ${newTag}
       </div>
     `;
