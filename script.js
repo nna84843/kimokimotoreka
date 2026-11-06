@@ -7,8 +7,8 @@ const defaultUserData = {
   lastRouletteDate: "", 
   inventory: {}, 
   usedCodes: [],
-  usedTradeCodes: [], // 使用済みトレードコードの保存リスト
-  favoriteCardId: "c8"
+  usedTradeCodes: [],
+  favoriteCardId: null // 初期状態はお気に入り未登録（なし）
 };
 let userData = { ...defaultUserData };
 
@@ -50,8 +50,18 @@ function switchView(viewId, btnElement) {
 function renderHomePartner() {
   const container = document.getElementById('partner-card-container');
   if(!container) return;
-  let favoriteCard = CARDS.find(c => c.id === userData.favoriteCardId);
-  if (!favoriteCard) favoriteCard = CARDS[0];
+
+  // お気に入りが未登録（null または 空）の場合は何も表示しない
+  if (!userData.favoriteCardId) {
+    container.innerHTML = "";
+    return;
+  }
+
+  const favoriteCard = CARDS.find(c => c.id === userData.favoriteCardId);
+  if (!favoriteCard) {
+    container.innerHTML = "";
+    return;
+  }
 
   const count = userData.inventory[favoriteCard.id] || 0;
   container.innerHTML = createCardHTML(favoriteCard, count, false);
@@ -209,7 +219,6 @@ function receiveTradeCode() {
   const code = input.value.trim();
   if(!code) return;
   
-  // 使用済みコードのチェック
   if(!userData.usedTradeCodes) userData.usedTradeCodes = [];
   if(userData.usedTradeCodes.includes(code)) {
     return alert("このトレードコードは既に使用されています！");
@@ -225,7 +234,7 @@ function receiveTradeCode() {
     if(!card) throw new Error("存在しないカード");
     
     userData.inventory[id] = (userData.inventory[id] || 0) + 1;
-    userData.usedTradeCodes.push(code); // 使用済みとして記録
+    userData.usedTradeCodes.push(code);
     
     input.value = "";
     alert(`トレード成功！\n「${card.name} (${card.rarity})」を受け取りました！`);
@@ -253,12 +262,10 @@ function useSerialCode() {
   }
 }
 
-// データ書き出し
 function exportData() {
   prompt("以下の文字列がセーブデータです。コピーして保存してください。", JSON.stringify(userData));
 }
 
-// データ読み込み（復元）
 function importData() {
   const input = document.getElementById('import-input');
   if(!input) return;

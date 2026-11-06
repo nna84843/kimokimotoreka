@@ -107,5 +107,235 @@ h1, h2, h3 { color: var(--primary); text-align: center; margin-top: 10px; }
   font-weight: bold;
   cursor: pointer;
   display: flex;
-  
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 0 10px rgba(255,0,127,0.5);
+}
+.roulette-icon-btn.has-notice { animation: pulse 1.5s infinite; }
+.roulette-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #00ffcc;
+  color: #000;
+  font-size: 0.75em;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 900;
+  pointer-events: none;
+}
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 0, 127, 0.7); }
+  70% { box-shadow: 0 0 0 12px rgba(255, 0, 127, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 0, 127, 0); }
+}
+
+.partner-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 10px 0 30px 0;
+}
+.partner-card-wrap { width: 230px; margin-bottom: 12px; }
+
+/* カード枠・レアリティスタイル */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+
+.card {
+  background: var(--card-bg);
+  border-radius: 10px;
+  padding: 6px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.2s;
+}
+
+.card-img-wrap {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #000;
+  position: relative;
+}
+.card-img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+.card-info { padding-top: 6px; }
+.card-name { font-size: 0.85em; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.limit-break {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: var(--primary);
+  color: #000;
+  padding: 2px 7px;
+  border-radius: 12px;
+  font-size: 0.75em;
+  font-weight: bold;
+  z-index: 2;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.6);
+  pointer-events: none;
+}
+
+.rarity-tag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.7em;
+  font-weight: 900;
+  color: #fff;
+  z-index: 2;
+  text-shadow: 0 1px 2px #000;
+  pointer-events: none;
+}
+
+.card.N { border: 2px solid #666; }
+.card.N .rarity-tag { background: #555; }
+
+.card.R { border: 2px solid #00e676; box-shadow: 0 0 6px rgba(0,230,118,0.3); }
+.card.R .rarity-tag { background: #00a855; }
+
+.card.SR { border: 2px solid #b388ff; box-shadow: 0 0 10px rgba(179,136,255,0.5); }
+.card.SR .rarity-tag { background: #7c4dff; }
+
+.card.SSR {
+  border: 2px solid #ffd700;
+  background: linear-gradient(145deg, #2a1f00, #161622);
+  box-shadow: 0 0 14px rgba(255,215,0,0.6);
+}
+.card.SSR .rarity-tag { background: linear-gradient(45deg, #ff9100, #ffd700); color: #000; }
+
+.card.UR {
+  border: 2px solid transparent;
+  background: linear-gradient(#161622, #161622) padding-box,
+              linear-gradient(45deg, #ff007f, #00ffcc, #ff00ff) border-box;
+  box-shadow: 0 0 18px var(--accent);
+}
+.card.UR .rarity-tag { background: linear-gradient(45deg, #ff007f, #7c4dff); }
+
+/* モーダル */
+.modal-overlay { 
+  position: fixed; 
+  top: 0; 
+  left: 0; 
+  width: 100%; 
+  height: 100%; 
+  background: rgba(0,0,0,0.88); 
+  z-index: 100; 
+  display: none; 
+  flex-direction: column; 
+  justify-content: center; 
+  align-items: center; 
+  padding: 10px;
+}
+.modal-card-content { cursor: default; }
+
+.roulette-modal-card {
+  background: var(--card-bg);
+  border: 2px solid var(--primary);
+  border-radius: 12px;
+  padding: 16px 12px;
+  text-align: center;
+  max-width: 440px;
+  width: 96%;
+  box-shadow: 0 0 20px rgba(0,255,204,0.3);
+}
+
+/* 高速演出＆結果リスト用スタイル */
+.gacha-anim-card {
+  text-align: center;
+  max-width: 260px;
+  width: 80%;
+  margin: 0 auto;
+}
+
+.new-badge {
+  background: var(--accent);
+  color: #fff;
+  font-weight: bold;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 1.1em;
+  display: inline-block;
+  margin-bottom: 12px;
+  box-shadow: 0 0 12px var(--accent);
+  animation: pulse 1s infinite;
+}
+
+.result-list {
+  text-align: left;
+  max-width: 100%;
+  max-height: 55vh;
+  overflow-y: auto;
+  background: #101018;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #222;
+  margin-top: 10px;
+}
+
+.result-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #222;
+  font-size: 0.9em;
+}
+.result-item:last-child { border-bottom: none; }
+
+.result-rarity {
+  font-weight: 900;
+  width: 40px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 0.8em;
+  flex-shrink: 0;
+}
+.result-rarity.N { background: #444; color: #fff; }
+.result-rarity.R { background: #00a855; color: #fff; }
+.result-rarity.SR { background: #7c4dff; color: #fff; }
+.result-rarity.SSR { background: #ffd700; color: #000; }
+.result-rarity.UR { background: #ff007f; color: #fff; }
+
+.result-name {
+  flex: 1;
+  min-width: 0;
+  margin: 0 6px;
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.92em;
+}
+
+.result-count {
+  color: var(--primary);
+  font-weight: bold;
+  white-space: nowrap;
+  margin-right: 6px;
+  flex-shrink: 0;
+  font-size: 0.9em;
+}
+
+.result-new-tag {
+  color: var(--accent);
+  font-size: 0.75em;
+  font-weight: 900;
+  border: 1px solid var(--accent);
+  padding: 1px 4px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
 
