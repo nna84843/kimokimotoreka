@@ -46,7 +46,8 @@ function saveData() {
 }
 
 function updateUI() {
-  document.getElementById('ui-tickets').innerText = userData.tickets;
+  const ticketsEl = document.getElementById('ui-tickets');
+  if(ticketsEl) ticketsEl.innerText = userData.tickets;
   renderHomePartner();
   renderInventory();
   renderTradeOptions();
@@ -56,8 +57,9 @@ function updateUI() {
 function switchView(viewId, btnElement) {
   document.querySelectorAll('.view').forEach(e => e.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(e => e.classList.remove('active'));
-  document.getElementById(viewId).classList.add('active');
-  btnElement.classList.add('active');
+  const targetView = document.getElementById(viewId);
+  if(targetView) targetView.classList.add('active');
+  if(btnElement) btnElement.classList.add('active');
 }
 
 /* =========================================
@@ -65,6 +67,7 @@ function switchView(viewId, btnElement) {
 ========================================= */
 function renderHomePartner() {
   const container = document.getElementById('partner-card-container');
+  if(!container) return;
   let favoriteCard = CARDS.find(c => c.id === userData.favoriteCardId);
   if (!favoriteCard) favoriteCard = CARDS[0];
 
@@ -83,11 +86,13 @@ function setFavoriteCard(cardId) {
 ========================================= */
 function openRouletteModal() {
   checkRouletteTime();
-  document.getElementById('roulette-modal').style.display = 'flex';
+  const modal = document.getElementById('roulette-modal');
+  if(modal) modal.style.display = 'flex';
 }
 
 function closeRouletteModal() {
-  document.getElementById('roulette-modal').style.display = 'none';
+  const modal = document.getElementById('roulette-modal');
+  if(modal) modal.style.display = 'none';
 }
 
 function checkRouletteTime() {
@@ -103,25 +108,28 @@ function checkRouletteTime() {
   const spinBtn = document.getElementById('btn-roulette-spin');
   const msg = document.getElementById('roulette-msg');
 
+  if(!spinBtn) return resetDate;
+
   if(userData.lastRouletteDate === resetDate) {
-    iconBtn.classList.remove('has-notice');
-    noticeBadge.style.display = 'none';
+    if(iconBtn) iconBtn.classList.remove('has-notice');
+    if(noticeBadge) noticeBadge.style.display = 'none';
     spinBtn.disabled = true;
     spinBtn.innerText = "本日は受取済み";
-    msg.innerText = "次の更新は明日15:00です。";
+    if(msg) msg.innerText = "次の更新は明日15:00です。";
   } else {
-    iconBtn.classList.add('has-notice');
-    noticeBadge.style.display = 'flex';
+    if(iconBtn) iconBtn.classList.add('has-notice');
+    if(noticeBadge) noticeBadge.style.display = 'flex';
     spinBtn.disabled = false;
     spinBtn.innerText = "ルーレットを回す！";
-    msg.innerText = "";
+    if(msg) msg.innerText = "";
   }
   return resetDate;
 }
 
 function spinRoulette() {
   const resetDate = checkRouletteTime();
-  if(document.getElementById('btn-roulette-spin').disabled) return;
+  const spinBtn = document.getElementById('btn-roulette-spin');
+  if(spinBtn && spinBtn.disabled) return;
 
   const r = Math.random() * 100;
   let getTickets = 10;
@@ -140,7 +148,7 @@ function spinRoulette() {
 }
 
 /* =========================================
-   5. ガチャ＆高速演出ロジック
+   5. ガチャ＆爆速NEWカード限定演出ロジック
 ========================================= */
 async function drawGacha(times) {
   if (times === 'max') {
@@ -166,18 +174,19 @@ async function drawGacha(times) {
     const pool = CARDS.filter(c => c.rarity === targetRarity);
     const getCard = pool[Math.floor(Math.random() * pool.length)];
     
-    // ガチャを引いた時点で「未所持(初獲得)」か判定
-    const isNew = (!userData.inventory[getCard.id] || userData.inventory[getCard.id] === 0);
+    // ガチャ引く前の所持数で NEW 判定
+    const currentCount = userData.inventory[getCard.id] || 0;
+    const isNew = (currentCount === 0);
     
     results.push({ card: getCard, isNew: isNew });
     
-    // 所持数（凸数）を加算
-    userData.inventory[getCard.id] = (userData.inventory[getCard.id] || 0) + 1;
+    // インベントリに加算
+    userData.inventory[getCard.id] = currentCount + 1;
   }
   
   saveData();
   
-  // 1枚ずつ高速演出開始
+  // 新・演出処理（NEWのみ表示）
   await playGachaAnimation(results);
 }
 
@@ -190,201 +199,35 @@ function playGachaAnimation(results) {
     const newBadge = document.getElementById('gacha-anim-new');
     const tapMsg = document.getElementById('gacha-anim-tap-msg');
 
+    // ガチャ結果の中で「未所持（NEW）」だったカードだけを抽出
+    const newItems = results.filter(item => item.isNew);
+
+    if (!modal || !animContainer || !summaryContainer || !cardTarget) {
+      showGachaSummary(results);
+      if(modal) modal.style.display = 'flex';
+      resolve();
+      return;
+    }
+
+    // 【爆速処理】NEWカードが1枚もない場合は、画像演出ゼロで即リスト表示！
+    if (newItems.length === 0) {
+      animContainer.style.display = 'none';
+      showGachaSummary(results);
+      resolve();
+      return;
+    }
+
+    // NEWカードが存在する場合は1枚ずつタップで表示
     summaryContainer.style.display = 'none';
     animContainer.style.display = 'block';
     modal.style.display = 'flex';
 
     let index = 0;
 
-    async function nextCard() {
-      if (index >= results.length) {
+    async function showNextNewCard() {
+      if (index >= newItems.length) {
+        // すべてのNEWを表示し終わったら結果リストへ
         animContainer.style.display = 'none';
         showGachaSummary(results);
-        resolve();
-        return;
-      }
-
-      const item = results[index];
-      cardTarget.innerHTML = createCardHTML(item.card, 1, false);
-
-      if (item.isNew) {
-        // NEWカード：一時停止
-        newBadge.style.display = 'inline-block';
-        tapMsg.innerText = "【 NEWカード獲得！】タップで次へ";
         
-        await waitForTap(modal);
-        
-        newBadge.style.display = 'none';
-        tapMsg.innerText = "";
-        index++;
-        nextCard();
-      } else {
-        // 所持済みカード：高速表示 (70ms)
-        newBadge.style.display = 'none';
-        tapMsg.innerText = "";
-        index++;
-        setTimeout(nextCard, 70);
-      }
-    }
-
-    nextCard();
-  });
-}
-
-function waitForTap(element) {
-  return new Promise((resolve) => {
-    function handler(e) {
-      e.stopPropagation();
-      element.removeEventListener('click', handler);
-      element.removeEventListener('touchstart', handler);
-      resolve();
-    }
-    element.addEventListener('click', handler, { once: true });
-    element.addEventListener('touchstart', handler, { once: true });
-  });
-}
-
-function showGachaSummary(results) {
-  const summaryContainer = document.getElementById('gacha-summary-container');
-  const resultList = document.getElementById('gacha-result-list');
-  
-  resultList.innerHTML = "";
-  
-  results.forEach(item => {
-    const newTag = item.isNew ? `<span class="result-new-tag">NEW!</span>` : "";
-    resultList.innerHTML += `
-      <div class="result-item">
-        <span class="result-rarity ${item.card.rarity}">${item.card.rarity}</span>
-        <span class="result-name">${item.card.name}</span>
-        ${newTag}
-      </div>
-    `;
-  });
-
-  summaryContainer.style.display = 'block';
-}
-
-function closeGachaResult() {
-  document.getElementById('gacha-result').style.display = 'none';
-}
-
-function createCardHTML(card, count = 1, showSetBtn = false) {
-  const limitBreak = count - 1;
-  const lbBadge = limitBreak > 0 ? `<div class="limit-break">+${limitBreak}</div>` : "";
-  const isFavorite = (userData.favoriteCardId === card.id);
-  
-  let setBtnHTML = "";
-  if (showSetBtn) {
-    if (isFavorite) {
-      setBtnHTML = `<button class="btn btn-sm" style="background:#555; color:#aaa;" disabled>★ 看板中</button>`;
-    } else {
-      setBtnHTML = `<button class="btn btn-sm" onclick="setFavoriteCard('${card.id}')">★ ホームに設定</button>`;
-    }
-  }
-
-  return `
-    <div class="card ${card.rarity}">
-      ${lbBadge}
-      <div class="rarity-tag">${card.rarity}</div>
-      <div class="card-img-wrap">
-        <img src="${card.image}" class="card-img" alt="${card.name}">
-      </div>
-      <div class="card-info">
-        <div class="card-name">${card.name}</div>
-        ${setBtnHTML}
-      </div>
-    </div>
-  `;
-}
-
-/* =========================================
-   6. インベントリ描画
-========================================= */
-function renderInventory() {
-  const grid = document.getElementById('inventory-grid');
-  grid.innerHTML = "";
-  for(const [id, count] of Object.entries(userData.inventory)) {
-    if(count <= 0) continue;
-    const card = CARDS.find(c => c.id === id);
-    if(!card) continue;
-    grid.innerHTML += createCardHTML(card, count, true);
-  }
-}
-
-/* =========================================
-   7. 1v1 トレード
-========================================= */
-const SECRET_KEY = "GACHA26";
-
-function renderTradeOptions() {
-  const select = document.getElementById('trade-give-select');
-  select.innerHTML = '<option value="">あげるカードを選択...</option>';
-  for(const [id, count] of Object.entries(userData.inventory)) {
-    if(count > 0) {
-      const card = CARDS.find(c => c.id === id);
-      select.innerHTML += `<option value="${id}">${card.name} (${card.rarity} / 所持:${count})</option>`;
-    }
-  }
-}
-
-function issueTradeCode() {
-  const id = document.getElementById('trade-give-select').value;
-  if(!id) return alert("カードを選んでください");
-  if(userData.inventory[id] <= 0) return alert("所持していません");
-  
-  userData.inventory[id] -= 1;
-  const timestamp = Date.now();
-  const rawData = `${SECRET_KEY}|${id}|${timestamp}`;
-  const code = btoa(encodeURIComponent(rawData));
-  
-  document.getElementById('trade-code-output').value = code;
-  alert("コードを発行しました！手持ちからカードが1枚減りました。相手にコードを教えてあげてください。");
-  saveData();
-}
-
-function receiveTradeCode() {
-  const code = document.getElementById('trade-code-input').value.trim();
-  if(!code) return;
-  
-  try {
-    const rawData = decodeURIComponent(atob(code));
-    const parts = rawData.split('|');
-    if(parts[0] !== SECRET_KEY) throw new Error("不正なコード");
-    
-    const id = parts[1];
-    const card = CARDS.find(c => c.id === id);
-    if(!card) throw new Error("存在しないカード");
-    
-    userData.inventory[id] = (userData.inventory[id] || 0) + 1;
-    document.getElementById('trade-code-input').value = "";
-    alert(`トレード成功！\n「${card.name} (${card.rarity})」を受け取りました！`);
-    saveData();
-  } catch (e) {
-    alert("無効なコード、または形式が間違っています。");
-  }
-}
-
-/* =========================================
-   8. シリアルコード & セーブデータ管理
-========================================= */
-function useSerialCode() {
-  const code = document.getElementById('serial-input').value.trim().toUpperCase();
-  if(!code) return;
-  if(userData.usedCodes.includes(code)) return alert("既に使用済みのコードです。");
-  if(CODES[code]) {
-    userData.tickets += CODES[code];
-    userData.usedCodes.push(code);
-    alert(`コード承認！ ${CODES[code]}連分のチケットを獲得しました！`);
-    document.getElementById('serial-input').value = "";
-    saveData();
-  } else {
-    alert("存在しないシリアルコードです。");
-  }
-}
-
-function exportData() {
-  prompt("以下の文字列がセーブデータです。コピーして保存してください。", JSON.stringify(userData));
-}
-
-window.onload = loadData;
 
