@@ -148,7 +148,7 @@ function spinRoulette() {
 }
 
 /* =========================================
-   5. ガチャ＆NEW限定演出ロジック
+   5. ガチャ＆超高速パラパラ演出ロジック
 ========================================= */
 async function drawGacha(times) {
   if (times === 'max') {
@@ -186,6 +186,7 @@ async function drawGacha(times) {
   await playGachaAnimation(results);
 }
 
+// 1枚ずつ超高速切替 ＋ NEWカードストップ演出
 function playGachaAnimation(results) {
   return new Promise((resolve) => {
     const modal = document.getElementById('gacha-result');
@@ -195,18 +196,9 @@ function playGachaAnimation(results) {
     const newBadge = document.getElementById('gacha-anim-new');
     const tapMsg = document.getElementById('gacha-anim-tap-msg');
 
-    const newItems = results.filter(item => item.isNew);
-
     if (!modal || !animContainer || !summaryContainer || !cardTarget) {
       showGachaSummary(results);
       if(modal) modal.style.display = 'flex';
-      resolve();
-      return;
-    }
-
-    if (newItems.length === 0) {
-      animContainer.style.display = 'none';
-      showGachaSummary(results);
       resolve();
       return;
     }
@@ -216,28 +208,43 @@ function playGachaAnimation(results) {
     modal.style.display = 'flex';
 
     let index = 0;
+    const totalNew = results.filter(r => r.isNew).length;
+    let currentNewCount = 0;
 
-    async function showNextNewCard() {
-      if (index >= newItems.length) {
+    async function nextCard() {
+      if (index >= results.length) {
+        // 全カード表示完了 ➔ 集計結果画面へ
         animContainer.style.display = 'none';
         showGachaSummary(results);
         resolve();
         return;
       }
 
-      const item = newItems[index];
+      const item = results[index];
       cardTarget.innerHTML = createCardHTML(item.card, 1, false);
 
-      if (newBadge) newBadge.style.display = 'inline-block';
-      if (tapMsg) tapMsg.innerText = `【 NEW (${index + 1}/${newItems.length}) 】タップで次へ`;
+      if (item.isNew) {
+        // NEWカード：一時停止してタップを待つ
+        currentNewCount++;
+        if (newBadge) newBadge.style.display = 'inline-block';
+        if (tapMsg) tapMsg.innerText = `【 NEW (${currentNewCount}/${totalNew}) 】タップで次へ`;
 
-      await waitForTap(modal);
+        await waitForTap(modal);
 
-      index++;
-      showNextNewCard();
+        if (newBadge) newBadge.style.display = 'none';
+        if (tapMsg) tapMsg.innerText = "";
+        index++;
+        nextCard();
+      } else {
+        // 通常（被り）カード：超爆速で切替 (35ミリ秒)
+        if (newBadge) newBadge.style.display = 'none';
+        if (tapMsg) tapMsg.innerText = "";
+        index++;
+        setTimeout(nextCard, 35);
+      }
     }
 
-    showNextNewCard();
+    nextCard();
   });
 }
 
@@ -262,7 +269,6 @@ function showGachaSummary(results) {
   
   if(!summaryContainer || !resultList) return;
   
-  // 同一カードをカウント集計
   const summaryMap = new Map();
   results.forEach(item => {
     const id = item.card.id;
@@ -278,7 +284,6 @@ function showGachaSummary(results) {
 
   resultList.innerHTML = "";
   
-  // 集計結果のレンダリング
   summaryMap.forEach(data => {
     const newTag = data.isNew ? `<span class="result-new-tag">NEW!</span>` : "";
     const countText = data.count > 1 ? `<span style="color:var(--primary); font-weight:bold; margin-left:6px;">×${data.count}</span>` : "";
