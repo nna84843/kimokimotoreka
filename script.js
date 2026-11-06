@@ -140,7 +140,7 @@ function spinRoulette() {
 }
 
 /* =========================================
-   5. ガチャ＆新演出ロジック
+   5. ガチャ＆高速演出ロジック
 ========================================= */
 async function drawGacha(times) {
   if (times === 'max') {
@@ -181,7 +181,6 @@ async function drawGacha(times) {
   await playGachaAnimation(results);
 }
 
-// 1枚ずつ高速表示 ＋ NEWカード停止アニメーション
 function playGachaAnimation(results) {
   return new Promise((resolve) => {
     const modal = document.getElementById('gacha-result');
@@ -199,7 +198,6 @@ function playGachaAnimation(results) {
 
     async function nextCard() {
       if (index >= results.length) {
-        // 全表示終了 ➔ 最終結果リスト画面へ
         animContainer.style.display = 'none';
         showGachaSummary(results);
         resolve();
@@ -210,7 +208,7 @@ function playGachaAnimation(results) {
       cardTarget.innerHTML = createCardHTML(item.card, 1, false);
 
       if (item.isNew) {
-        // 未所持カード：一時停止してタップを待つ
+        // NEWカード：一時停止
         newBadge.style.display = 'inline-block';
         tapMsg.innerText = "【 NEWカード獲得！】タップで次へ";
         
@@ -221,7 +219,7 @@ function playGachaAnimation(results) {
         index++;
         nextCard();
       } else {
-        // 所持済みカード：超高速でスキップ (70ミリ秒)
+        // 所持済みカード：高速表示 (70ms)
         newBadge.style.display = 'none';
         tapMsg.innerText = "";
         index++;
@@ -233,7 +231,6 @@ function playGachaAnimation(results) {
   });
 }
 
-// タップされるまで待機する処理
 function waitForTap(element) {
   return new Promise((resolve) => {
     function handler(e) {
@@ -247,7 +244,6 @@ function waitForTap(element) {
   });
 }
 
-// 最終結果（テキストリスト表示）
 function showGachaSummary(results) {
   const summaryContainer = document.getElementById('gacha-summary-container');
   const resultList = document.getElementById('gacha-result-list');
@@ -272,6 +268,35 @@ function closeGachaResult() {
   document.getElementById('gacha-result').style.display = 'none';
 }
 
+function createCardHTML(card, count = 1, showSetBtn = false) {
+  const limitBreak = count - 1;
+  const lbBadge = limitBreak > 0 ? `<div class="limit-break">+${limitBreak}</div>` : "";
+  const isFavorite = (userData.favoriteCardId === card.id);
+  
+  let setBtnHTML = "";
+  if (showSetBtn) {
+    if (isFavorite) {
+      setBtnHTML = `<button class="btn btn-sm" style="background:#555; color:#aaa;" disabled>★ 看板中</button>`;
+    } else {
+      setBtnHTML = `<button class="btn btn-sm" onclick="setFavoriteCard('${card.id}')">★ ホームに設定</button>`;
+    }
+  }
+
+  return `
+    <div class="card ${card.rarity}">
+      ${lbBadge}
+      <div class="rarity-tag">${card.rarity}</div>
+      <div class="card-img-wrap">
+        <img src="${card.image}" class="card-img" alt="${card.name}">
+      </div>
+      <div class="card-info">
+        <div class="card-name">${card.name}</div>
+        ${setBtnHTML}
+      </div>
+    </div>
+  `;
+}
+
 /* =========================================
    6. インベントリ描画
 ========================================= */
@@ -287,7 +312,7 @@ function renderInventory() {
 }
 
 /* =========================================
-   7. 1v1 トレード (あいことば方式)
+   7. 1v1 トレード
 ========================================= */
 const SECRET_KEY = "GACHA26";
 
@@ -362,3 +387,4 @@ function exportData() {
 }
 
 window.onload = loadData;
+

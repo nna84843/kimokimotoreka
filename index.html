@@ -1,10 +1,12 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>オリジナルカードガチャシステム</title>
-<link rel="stylesheet" href="style.css">
+<!-- アプデ即時反映（キャッシュ対策）の ?v=2 付き -->
+<link rel="stylesheet" href="style.css?v=2">
 </head>
 <body>
 
@@ -14,12 +16,14 @@
 <div id="view-home" class="view active">
   <div class="home-header">
     <div style="font-weight:bold;">HOME MY CARD</div>
+    <!-- ルーレット起動アイコン -->
     <button id="btn-roulette-icon" class="roulette-icon-btn" onclick="openRouletteModal()">
       <span>🎡 デイリー</span>
       <div id="roulette-notice" class="roulette-badge">!</div>
     </button>
   </div>
 
+  <!-- 看板カード表示エリア -->
   <div class="partner-display">
     <div id="partner-card-container" class="partner-card-wrap"></div>
     <p style="font-size:0.85em; color:#aaa; margin-top:5px;">※「カード」タブからお気に入りを変更できます</p>
@@ -73,7 +77,7 @@
   <button class="btn" style="background:#800; color:#fff;" onclick="if(confirm('本当にデータを初期化しますか？')) { localStorage.removeItem('GachaAppDB'); location.reload(); }">データリセット</button>
 </div>
 
-<!-- ルーレットモーダル -->
+<!-- ルーレット用 モーダル -->
 <div id="roulette-modal" class="modal-overlay" onclick="if(event.target === this) closeRouletteModal();">
   <div class="roulette-modal-card modal-card-content">
     <h2 style="margin-top:0;">🎡 デイリールーレット</h2>
@@ -103,8 +107,7 @@
   </div>
 </div>
 
-
-<!-- 下部ナビゲーション -->
+<!-- ナビゲーション -->
 <div class="nav">
   <button class="nav-btn active" onclick="switchView('view-home', this)">HOME</button>
   <button class="nav-btn" onclick="switchView('view-gacha', this)">ガチャ</button>
@@ -113,6 +116,6 @@
   <button class="nav-btn" onclick="switchView('view-sys', this)">設定</button>
 </div>
 
-<script src="script.js"></script>
+<script src="script.js?v=2"></script>
 </body>
 </html>
