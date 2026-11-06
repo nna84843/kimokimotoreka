@@ -148,7 +148,7 @@ function spinRoulette() {
 }
 
 /* =========================================
-   5. ガチャ＆超高速パラパラ演出ロジック
+   5. ガチャ＆演出ロジック (0.1秒切り替え)
 ========================================= */
 async function drawGacha(times) {
   if (times === 'max') {
@@ -186,7 +186,6 @@ async function drawGacha(times) {
   await playGachaAnimation(results);
 }
 
-// 1枚ずつ超高速切替 ＋ NEWカードストップ演出
 function playGachaAnimation(results) {
   return new Promise((resolve) => {
     const modal = document.getElementById('gacha-result');
@@ -213,7 +212,6 @@ function playGachaAnimation(results) {
 
     async function nextCard() {
       if (index >= results.length) {
-        // 全カード表示完了 ➔ 集計結果画面へ
         animContainer.style.display = 'none';
         showGachaSummary(results);
         resolve();
@@ -224,7 +222,6 @@ function playGachaAnimation(results) {
       cardTarget.innerHTML = createCardHTML(item.card, 1, false);
 
       if (item.isNew) {
-        // NEWカード：一時停止してタップを待つ
         currentNewCount++;
         if (newBadge) newBadge.style.display = 'inline-block';
         if (tapMsg) tapMsg.innerText = `【 NEW (${currentNewCount}/${totalNew}) 】タップで次へ`;
@@ -236,11 +233,11 @@ function playGachaAnimation(results) {
         index++;
         nextCard();
       } else {
-        // 通常（被り）カード：超爆速で切替 (35ミリ秒)
+        // 通常（被り）カード：0.1秒（100ミリ秒）で切替
         if (newBadge) newBadge.style.display = 'none';
         if (tapMsg) tapMsg.innerText = "";
         index++;
-        setTimeout(nextCard, 35);
+        setTimeout(nextCard, 100);
       }
     }
 
@@ -261,7 +258,6 @@ function waitForTap(element) {
   });
 }
 
-// 最終結果（カード毎に集計して ×個数 表示）
 function showGachaSummary(results) {
   const summaryContainer = document.getElementById('gacha-summary-container');
   const resultList = document.getElementById('gacha-result-list');
